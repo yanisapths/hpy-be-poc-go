@@ -1,3 +1,10 @@
-module github.com/yanisapths/happyelders-api.git
+module github.com/yanisapths/happyelders-api
 
 go 1.19
+
+require github.com/aws/aws-sdk-go v1.44.145
+
+require (
+	github.com/aws/aws-lambda-go v1.35.0
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+)
