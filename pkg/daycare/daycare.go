@@ -9,7 +9,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
-	"github.com/yanisapths/happyelders-api/pkg/validators"
 )
 
 var (
@@ -78,10 +77,6 @@ func CreateDaycare(req events.APIGatewayProxyRequest, tableName string, dynaClie
 
 	if err := json.Unmarshal([]byte(req.Body), &d); err != nil {
 		return nil, errors.New(ErrorInvalidDaycareData)
-	}
-
-	if !validators.IsEmailValid(d.Email) {
-		return nil, errors.New(ErrorInvalidEmail)
 	}
 
 	currentDaycare, _ := FetchDaycare(d.DaycareName, tableName, dynaClient)
