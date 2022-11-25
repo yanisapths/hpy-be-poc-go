@@ -9,13 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/yanisapths/happyelders-api/pkg/validators"
 )
 
 var (
 	ErrorFailedToUnmarshalRecord = "failed to unmarshal record"
 	ErrorFailedToFetchRecord     = "failed to fetch record"
 	ErrorInvalidDaycareData      = "invalid daycare data"
-	ErrorInvalidId               = "invalid id"
+	ErrorInvalidEmail            = "invalid email"
+	ErrorInvalidDaycareName      = "Daycare name is already taken."
 	ErrorCouldNotMarshalItem     = "could not marshal item"
 	ErrorCouldNotDeleteItem      = "could not delete item"
 	ErrorCouldNotDynamoPutItem   = "could not dynamo put item"
@@ -24,15 +26,18 @@ var (
 )
 
 type Daycare struct {
-	Id          string `json:"id"`
 	DaycareName string `json:"name"`
+	Address     string `json:"address"`
+	Owner       string `json:"owner"`
+	PhoneNumber string `json:"phoneNumber"`
+	Email       string `json:"email"`
 }
 
-func FetchDaycare(id, tableName string, dynaClient dynamodbiface.DynamoDBAPI) (*Daycare, error) {
+func FetchDaycare(name, tableName string, dynaClient dynamodbiface.DynamoDBAPI) (*Daycare, error) {
 	input := &dynamodb.GetItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: aws.String(id),
+			"name": {
+				S: aws.String(name),
 			},
 		},
 		TableName: aws.String(tableName),
@@ -75,8 +80,12 @@ func CreateDaycare(req events.APIGatewayProxyRequest, tableName string, dynaClie
 		return nil, errors.New(ErrorInvalidDaycareData)
 	}
 
-	currentDaycare, _ := FetchDaycare(d.Id, tableName, dynaClient)
-	if currentDaycare != nil && len(currentDaycare.Id) != 0 {
+	if !validators.IsEmailValid(d.Email) {
+		return nil, errors.New(ErrorInvalidEmail)
+	}
+
+	currentDaycare, _ := FetchDaycare(d.DaycareName, tableName, dynaClient)
+	if currentDaycare != nil && len(currentDaycare.DaycareName) != 0 {
 		return nil, errors.New(ErrorDaycareAlreadyExists)
 	}
 
@@ -104,11 +113,11 @@ func UpdateDaycare(req events.APIGatewayProxyRequest, tableName string, dynaClie
 ) {
 	var d Daycare
 	if err := json.Unmarshal([]byte(req.Body), &d); err != nil {
-		return nil, errors.New(ErrorInvalidId)
+		return nil, errors.New(ErrorInvalidDaycareName)
 	}
 
-	currentDaycare, _ := FetchDaycare(d.Id, tableName, dynaClient)
-	if currentDaycare != nil && len(currentDaycare.Id) == 0 {
+	currentDaycare, _ := FetchDaycare(d.DaycareName, tableName, dynaClient)
+	if currentDaycare != nil && len(currentDaycare.DaycareName) == 0 {
 		return nil, errors.New(ErrorDaycareDoesNotExist)
 	}
 
@@ -131,11 +140,11 @@ func UpdateDaycare(req events.APIGatewayProxyRequest, tableName string, dynaClie
 
 func DeleteDaycare(req events.APIGatewayProxyRequest, tableName string, dynaClient dynamodbiface.DynamoDBAPI) error {
 
-	id := req.QueryStringParameters["id"]
+	name := req.QueryStringParameters["name"]
 	input := &dynamodb.DeleteItemInput{
 		Key: map[string]*dynamodb.AttributeValue{
-			"id": {
-				S: aws.String(id),
+			"name": {
+				S: aws.String(name),
 			},
 		},
 		TableName: aws.String(tableName),

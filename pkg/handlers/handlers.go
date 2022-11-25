@@ -18,9 +18,9 @@ type ErrorBody struct {
 func GetDaycare(req events.APIGatewayProxyRequest, tableName string, dynaClient dynamodbiface.DynamoDBAPI) (
 	*events.APIGatewayProxyResponse, error,
 ) {
-	id := req.QueryStringParameters["id"]
-	if len(id) > 0 {
-		result, err := daycare.FetchDaycare(id, tableName, dynaClient)
+	name := req.QueryStringParameters["name"]
+	if len(name) > 0 {
+		result, err := daycare.FetchDaycare(name, tableName, dynaClient)
 		if err != nil {
 			return apiResponse(http.StatusBadRequest, ErrorBody{aws.String(err.Error())})
 		}
