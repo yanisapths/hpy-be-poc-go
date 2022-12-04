@@ -41,10 +41,16 @@ func handler(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse
 		switch req.HTTPMethod {
 		case "GET":
 			return _appointmentHttp.GetAppointment(req, appointmentDetailsTable, dynaClient)
-		case "POST":
-			return _appointmentHttp.CreateAppointment(req, appointmentDetailsTable, dynaClient)
 		case "PUT":
 			return _appointmentHttp.UpdateAppointment(req, appointmentDetailsTable, dynaClient)
+		}
+	case "/appointment/create":
+		switch req.HTTPMethod {
+		case "POST":
+			return _appointmentHttp.CreateAppointment(req, appointmentDetailsTable, dynaClient)
+		}
+	case "/appointment/delete":
+		switch req.HTTPMethod {
 		case "DELETE":
 			return _appointmentHttp.Delete(req, appointmentDetailsTable, dynaClient)
 		}
@@ -53,10 +59,17 @@ func handler(req events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse
 		switch req.HTTPMethod {
 		case "GET":
 			return _daycareHttp.GetDaycare(req, tableName, dynaClient)
-		case "POST":
-			return _daycareHttp.CreateDaycare(req, tableName, dynaClient)
 		case "PUT":
 			return _daycareHttp.UpdateDaycare(req, tableName, dynaClient)
+
+		}
+	case "/daycare/create":
+		switch req.HTTPMethod {
+		case "POST":
+			return _daycareHttp.CreateDaycare(req, tableName, dynaClient)
+		}
+	case "/daycare/delete":
+		switch req.HTTPMethod {
 		case "DELETE":
 			return _daycareHttp.Delete(req, tableName, dynaClient)
 		}
